@@ -16,7 +16,7 @@ blood_bank_data.columns = blood_bank_data.columns.str.strip()
 blood_bank_data = blood_bank_data.fillna("")  # Replaces NaN with empty string
 
 # Print the column names to debug
-print("CSV Columns:", blood_bank_data.columns)
+# print("CSV Columns:", blood_bank_data.columns)
 
 # Function to get the list of all states
 def get_states():
