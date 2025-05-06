@@ -63,9 +63,9 @@ def api_get_blood_bank_data():
     return jsonify(filtered_data.to_dict(orient='records'))  # Return filtered data as JSON
 
 # Route to serve the blood.html file directly from static folder
-@app.route('/')
-def blood():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'blood.html')
+#@app.route('/')
+#def blood():
+   # return send_from_directory(os.path.join(app.root_path, 'static'), 'blood.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
