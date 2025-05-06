@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Availability</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #f4f4f9;
+        }
+
+        .dropdown-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        select {
+            padding: 10px;
+            margin: 0 10px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #ffcc00;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #e5a700;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #555;
+        }
+
+        th {
+            background-color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #1d1d1d;
+        }
+
+        tr:hover {
+            background-color: #444;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            padding: 10px;
+            width: 250px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background-color: #333;
+            color: white;
+        }
+
+        .search-container input::placeholder {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Blood Bank Availability</h1>
+
+    <div class="dropdown-container">
+        <select id="stateDropdown">
+            <option value="">Select State</option>
+        </select>
+
+        <select id="districtDropdown">
+            <option value="">Select District</option>
+            <!-- Districts for the selected state will populate here -->
+        </select>
+
+        <button onclick="searchBloodStock()">Search</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search Blood Bank...">
+    </div>
+
+    <table id="bloodBankTable">
+        <thead>
+            <tr>
+                <th>S.No.</th>
+                <th>Blood Bank</th>
+                <th>Category</th>
+                
+                <th>Address</th> <!-- Showing Address Info -->
+                <th>Pincode</th>
+                <th> Email</th>
+                <th> Contact No</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be dynamically populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        window.onload = function() {
+            fetchStates();  // Fetch states when page loads
+        };
+
+        // Function to fetch states from the backend API
+        function fetchStates() {
+            fetch('/api/states')
+                .then(response => response.json())
+                .then(states => {
+                    const stateDropdown = document.getElementById("stateDropdown");
+                    states.forEach(state => {
+                        const option = document.createElement("option");
+                        option.value = state;
+                        option.textContent = state;
+                        stateDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => console.log("Error fetching states:", error));
+        }
+
+        // Function to fetch districts when state is selected
+        document.getElementById("stateDropdown").addEventListener("change", function() {
+            const state = this.value;
+            if (state) {
+                fetch(`/api/districts?state=${state}`)
+                    .then(response => response.json())
+                    .then(districts => {
+                        const districtDropdown = document.getElementById("districtDropdown");
+                        districtDropdown.innerHTML = '<option value="">Select District</option>';  // Clear existing options
+                        districts.forEach(district => {
+                            const option = document.createElement("option");
+                            option.value = district;
+                            option.textContent = district;
+                            districtDropdown.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.log("Error fetching districts:", error));
+            }
+        });
+
+        // Function to search blood bank data
+        function searchBloodStock() {
+            const state = document.getElementById("stateDropdown").value;
+            const district = document.getElementById("districtDropdown").value;
+
+            if (!state) {
+                alert("Please select a state!");
+                return;
+            }
+
+            const url = `/api/blood-bank-data?state=${state}&district=${district}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => populateTable(data))
+                .catch(error => console.log("Error fetching data:", error));
+        }
+
+        // Function to populate the table with data
+        function populateTable(data) {
+            const tableBody = document.getElementById("bloodBankTable").getElementsByTagName("tbody")[0];
+            tableBody.innerHTML = "";  // Clear existing rows
+
+            data.forEach((item, index) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item['Blood Bank Name']}</td>
+                    <td>${item['Category']}</td>
+                    
+                    <td>${item['Address']}</td> <!-- Address Info Column -->
+                    <td>${item['Pincode']}</td>
+                    <td>${item['Email']}</td>
+                    <td>${item['Contact No']}</td>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
